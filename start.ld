@@ -24,6 +24,8 @@ SECTIONS
 		*(stage1_prcb)
 		*(stage1_sys_proc)
 		*(stage1_fault_proc)
+		*(stage1_fault_table)
+		*(stage1_interrupt_table)
 		*(.text) 
 		_etext = .; 
 	} >code
