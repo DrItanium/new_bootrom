@@ -636,10 +636,33 @@ intr_table:
         .word _isr1          ;           # interrupt table entry 254
         .word _isr0          ;           # interrupt table entry 255
 
+.set IOSpaceBase, 0xFE000000
 .text
 .align 6
+_init_fp:
+	cvtir 0, fp0
+	movre fp0, fp1
+	movre fp1, fp2
+	movre fp2, fp3
+	ret
+fix_stack:
+	flushreg
+	or pfp, 7, pfp # put interrupt return code into pfp
+	ldconst 0x1f0002, g0
+	st g0, -16(fp) # store contrived PC
+	ldconst 0x3b001000, g0 # setup arithmetic controls
+	st g0, -12(fp)	       # store contrived AC
+	ret
 interpreter_entry:
-	mov g0, g0
+	# before we enter into the interpreter, we leave interpreter state
+	ldconst 64, g0 # bump up stack to make
+	addo sp, g0, sp # room for simulated interrupt frame
+	call fix_stack
+	lda _user_stack, fp # setup user stack space
+	lda -0x40(fp), pfp  # load pfp
+	lda 0x40(fp), sp    # setup current stack pointer
+	call _init_fp		# initialize floating point registers
+	# at this point we are ready to enter into the interpreter
 1:
 	b 1b
 # fault handlers
