@@ -15,17 +15,17 @@
 
 .section stage1_code,"x"
 start_ip:
-	mov g0, g0
+	mov 0, g14 
 	
-/* the structures here include
-
-   - The code which pulls the processor out of interrupt context and then jumps off to stage 2
-   - The system address table
-   - The initial PRCB
-   - A minimal fault handler
-   - Initial system call table
-   - The interrupt table
-*/
+	ldconst 0xff000010, g5
+	ldconst .Ljump_to_interpreter_iac, g6
+	synmovq g5, g6
+	.align 4
+.Ljump_to_interpreter_iac:
+	.word 0x93000000 /* reinitialize iac message */
+	.word system_address_table
+	.word _prcb_ram
+	.word interpreter_entry
 
 .section stage1_sat, "a"
 .align 6
@@ -51,3 +51,9 @@ fault_proc_table:
 .align 6
 interpreter_entry:
 	mov g0, g0
+
+.bss _user_stack, 256, 6
+.bss _intr_stack , 256, 6
+.bss _sup_stack, 256, 6
+.bss _intr_ram, 1028, 6
+.bss _prcb_ram, 176, 6
