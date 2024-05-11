@@ -4,7 +4,8 @@ MEMORY /* describe the partitioning of the memory space for the application */
 {
 	boot (!r) : ORIGIN = 0, l = 32,
 	sram(!rw) : ORIGIN = 0xFE100000, l = 4K, /* This can be easily expanded but we will work with this for now */
-	code(!r) : ORIGIN = 0xFE800000, l = 128K,
+	code(!r) : ORIGIN = 0xFE800000, l = 128K
+
 }
 
 /* A tiny 256 byte stack for now */
@@ -15,14 +16,15 @@ STACK_SIZE = 256;
 SECTIONS
 {
 	.boot_words : {
-		*(.boot_words) /* place the actual boot words here */
+		*(boot_words) /* place the actual boot words here */
 	} >boot
 	.text : {
-		.*(stage1_code)
-		.*(stage1_sat)
-		.*(stage1_sys_proc)
-		.*(stage1_fault_proc)
-		.*(.text) 
+		*(stage1_code)
+		*(stage1_sat)
+		*(stage1_prcb)
+		*(stage1_sys_proc)
+		*(stage1_fault_proc)
+		*(.text) 
 		_etext = .; 
 	} >code
 	.bss : 
