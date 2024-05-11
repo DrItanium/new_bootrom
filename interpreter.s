@@ -40,3 +40,6 @@ sys_proc_table:
 .align 6
 fault_proc_table:
 
+.text
+.align 6
+interpreter_entry:
