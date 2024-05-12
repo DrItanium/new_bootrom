@@ -24,9 +24,9 @@
 
 all: base_image
 
-base_image: interpreter.o
+base_image: interpreter.o start.ld
 	@echo -n "Building base_image... "
-	@${CC} -T start.ld -nostdlib -o core_image interpreter.o
+	@${CC} -T start.ld -nostdlib -o base_image interpreter.o
 	@echo done.
 
 %.o: %.s

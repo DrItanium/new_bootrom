@@ -119,6 +119,8 @@ DeclareSegment 0, 0, \addr, 0x204000fb
     restore_globals
     ret
 .endm
+
+# CODE START
 .global system_address_table
 .global prcb_ptr
 .global start_ip
@@ -133,7 +135,7 @@ DeclareSegment 0, 0, \addr, 0x204000fb
     .word -1
 /* start in IO space */
 
-.section stage1_code,"x"
+.text
 start_ip:
 	mov 0, g14 
 	
@@ -178,7 +180,6 @@ DefFaultDispatcher reserved
 	.word _prcb_ram
 	.word interpreter_entry
 
-.section stage1_sat, "a"
 .align 6
 system_address_table:
     NullSegment # 0
@@ -193,7 +194,6 @@ system_address_table:
     DeclareSegment 0, 0, sys_proc_table, 0x304000fb # 9
     DeclareSegment 0, 0, fault_proc_table, 0x304000fb # 10
 
-.section stage1_prcb, "a"
 .align 6
 prcb_ptr:
 	# taken from hitagimon
@@ -217,7 +217,6 @@ prcb_ptr:
     .space 48 # 80 - resumption record
     .space 44 # 128 - system  error fault record
 
-.section stage1_sys_proc, "a"
 .align 6
 .global sys_proc_table
 sys_proc_table:
@@ -301,7 +300,6 @@ sys_proc_table:
 	.word 0, 0, 0, 0 # 252-255
 	.word 0, 0, 0, 0
 
-.section stage1_fault_proc, "a"
 .align 6
 fault_proc_table:
 .macro FaultTableEntry name
@@ -335,7 +333,6 @@ DefTableEntry _user_\()\name\()_core
     FaultTableEntry event
     FaultTableEntry reserved
 
-.section stage1_fault_table
 .macro FaultEntry index, code=0x2, table=0x2bf
 .word (\index << 2) | \code
 .word \table
@@ -378,7 +375,6 @@ fault_table:
     ReservedFaultEntry
     ReservedFaultEntry
     ReservedFaultEntry
-.section stage1_interrupt_table
         .global     intr_table
         .align      6
 intr_table:
@@ -637,7 +633,6 @@ intr_table:
         .word _isr0          ;           # interrupt table entry 255
 
 .set IOSpaceBase, 0xFE000000
-.text
 .align 6
 _init_fp:
 	cvtir 0, fp0

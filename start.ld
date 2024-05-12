@@ -19,13 +19,6 @@ SECTIONS
 		*(boot_words) /* place the actual boot words here */
 	} >boot
 	.text : {
-		*(stage1_code)
-		*(stage1_sat)
-		*(stage1_prcb)
-		*(stage1_sys_proc)
-		*(stage1_fault_proc)
-		*(stage1_fault_table)
-		*(stage1_interrupt_table)
 		*(.text) 
 		_etext = .; 
 	} >code
