@@ -136,49 +136,6 @@ DeclareSegment 0, 0, \addr, 0x204000fb
 /* start in IO space */
 
 .text
-start_ip:
-	mov 0, g14 
-	
-	ldconst 0xff000010, g5
-	ldconst .Ljump_to_interpreter_iac, g6
-	synmovq g5, g6
-.global _do_nothing_isr
-DefInterruptHandler _isr0, INT0
-DefInterruptHandler _isr1, INT1
-DefInterruptHandler _isr2, INT2
-DefInterruptHandler _isr3, INT3
-_do_nothing_isr:
-	ret
-.macro DefFaultDispatcher name
-.text
-_user_\()\name\()_core:
-	lda	-48(fp), g0	/* pass fault data */
-	callx _user_\()\name
-	flushreg
-	ret
-.endm
-# We pass the fault data by grabbing it and passing it via g0 to the function itself
-DefFaultDispatcher override
-DefFaultDispatcher trace
-DefFaultDispatcher operation
-DefFaultDispatcher arithmetic
-DefFaultDispatcher floating_point
-DefFaultDispatcher constraint
-DefFaultDispatcher protection
-DefFaultDispatcher machine
-DefFaultDispatcher type
-DefFaultDispatcher virtual_memory
-DefFaultDispatcher structural
-DefFaultDispatcher process
-DefFaultDispatcher descriptor
-DefFaultDispatcher event
-DefFaultDispatcher reserved
-	.align 4
-.Ljump_to_interpreter_iac:
-	.word 0x93000000 /* reinitialize iac message */
-	.word system_address_table
-	.word _prcb_ram
-	.word interpreter_entry
 
 .align 6
 system_address_table:
@@ -632,34 +589,39 @@ intr_table:
         .word _isr1          ;           # interrupt table entry 254
         .word _isr0          ;           # interrupt table entry 255
 
-.set IOSpaceBase, 0xFE000000
 .align 6
-_init_fp:
-	cvtir 0, fp0
-	movre fp0, fp1
-	movre fp1, fp2
-	movre fp2, fp3
+# extra structures and handlers for initialization and booting
+.global _do_nothing_isr
+DefInterruptHandler _isr0, INT0
+DefInterruptHandler _isr1, INT1
+DefInterruptHandler _isr2, INT2
+DefInterruptHandler _isr3, INT3
+_do_nothing_isr:
 	ret
-fix_stack:
+.macro DefFaultDispatcher name
+.text
+_user_\()\name\()_core:
+	lda	-48(fp), g0	/* pass fault data */
+	callx _user_\()\name
 	flushreg
-	or pfp, 7, pfp # put interrupt return code into pfp
-	ldconst 0x1f0002, g0
-	st g0, -16(fp) # store contrived PC
-	ldconst 0x3b001000, g0 # setup arithmetic controls
-	st g0, -12(fp)	       # store contrived AC
 	ret
-interpreter_entry:
-	# before we enter into the interpreter, we leave interpreter state
-	ldconst 64, g0 # bump up stack to make
-	addo sp, g0, sp # room for simulated interrupt frame
-	call fix_stack
-	lda _user_stack, fp # setup user stack space
-	lda -0x40(fp), pfp  # load pfp
-	lda 0x40(fp), sp    # setup current stack pointer
-	call _init_fp		# initialize floating point registers
-	# at this point we are ready to enter into the interpreter
-1:
-	b 1b
+.endm
+# We pass the fault data by grabbing it and passing it via g0 to the function itself
+DefFaultDispatcher override
+DefFaultDispatcher trace
+DefFaultDispatcher operation
+DefFaultDispatcher arithmetic
+DefFaultDispatcher floating_point
+DefFaultDispatcher constraint
+DefFaultDispatcher protection
+DefFaultDispatcher machine
+DefFaultDispatcher type
+DefFaultDispatcher virtual_memory
+DefFaultDispatcher structural
+DefFaultDispatcher process
+DefFaultDispatcher descriptor
+DefFaultDispatcher event
+DefFaultDispatcher reserved
 # fault handlers
 _user_process:
 	ret
@@ -706,3 +668,79 @@ _vect_INT3:
 .bss _sup_stack, 256, 6
 .bss _intr_ram, 1028, 6
 .bss _prcb_ram, 176, 6
+
+.set IOSpaceBase, 0xFE000000
+.set CLK1SpeedPort, IOSpaceBase + 0x0
+.set CLK2SpeedPort, IOSpaceBase + 0x4
+.set ConsolePort, IOSpaceBase + 0x8
+.set FlushPort, IOSpaceBase + 0xC
+.text
+.L_text_hello_world:
+.asciz "hello, world!"
+.align 6
+# code actually begins here!
+start_ip:
+	mov 0, g14 
+	ldconst .L_text_hello_world, g0
+	bal print_string
+	ldconst 0xff000010, g5
+	ldconst .Ljump_to_interpreter_iac, g6
+	synmovq g5, g6
+	
+	.align 4
+.Ljump_to_interpreter_iac:
+	.word 0x93000000 /* reinitialize iac message */
+	.word system_address_table
+	.word _prcb_ram
+	.word interpreter_entry
+.align 6
+	# a simple data transfer routine responsible for copying blocks of 16-bytes from one place and 
+    # depositing them in another location
+move_data:
+	# taken from the Kx manual and modified to look like the one found in SX
+    #  manual and what I wrote for hitagimon (without the text output!)
+	ldq  (g1)[g4*1], g8       # load 4 words into g8
+	stq  g8, (g2)[g4*1]       # store to destination
+	addi g4, 16, g4		      # next 16 bytes
+	cmpibg g0, g4, move_data  # loop until done
+	bx (g14)				  # return
+print_string:
+	# g0 - base address of the string to print
+	# g9 - internal
+	ldconst ConsolePort, g9
+1:
+	ldob 0(g0), g8 			  # load the first character
+	cmpibe 0, g8, 2f
+	st g8, 0(g9) 			  # print character out
+	addi g0, 1, g0 			  # next character
+	b 1b					  # go again
+2:
+	ldconst FlushPort, g9
+	st g0, 0(g9) 			  # flush the stream
+	bx (g14)
+_init_fp:
+	cvtir 0, fp0
+	movre fp0, fp1
+	movre fp1, fp2
+	movre fp2, fp3
+	ret
+fix_stack:
+	flushreg
+	or pfp, 7, pfp # put interrupt return code into pfp
+	ldconst 0x1f0002, g0
+	st g0, -16(fp) # store contrived PC
+	ldconst 0x3b001000, g0 # setup arithmetic controls
+	st g0, -12(fp)	       # store contrived AC
+	ret
+interpreter_entry:
+	# before we enter into the interpreter, we leave interpreter state
+	ldconst 64, g0 # bump up stack to make
+	addo sp, g0, sp # room for simulated interrupt frame
+	call fix_stack
+	lda _user_stack, fp # setup user stack space
+	lda -0x40(fp), pfp  # load pfp
+	lda 0x40(fp), sp    # setup current stack pointer
+	call _init_fp		# initialize floating point registers
+	# at this point we are ready to enter into the interpreter
+1:
+	b 1b
