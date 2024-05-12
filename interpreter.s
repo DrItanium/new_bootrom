@@ -130,9 +130,9 @@ DeclareSegment 0, 0, \addr, 0x204000fb
     .word 0
     .word start_ip # pointer to first ip
 	.word cs1 # calculated at link time (bind ?cs1 (- (+ ?SAT ?PRCB ?startIP)))
-    .word 0
-    .word 0
-    .word -1
+    .word cs2 # drift compensation for system_address_table
+    .word cs3 # drift compensation for prcb_ptr
+    .word -1  # always need this
 /* start in IO space */
 
 .text

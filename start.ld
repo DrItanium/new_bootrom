@@ -36,5 +36,19 @@ SECTIONS
 	} >sram
 }
 
-cs1 = -(ABSOLUTE(system_address_table) + ABSOLUTE(prcb_ptr) + ABSOLUTE(start_ip)) ;
+/* we need to compensate for the fact that the locations of the sat and prcb
+ * are very far away from the bootwords. Thus computing the checksum via
+ * addition causes drift to happen since we have multiple additions with carry. 
+ * the i960 manual sucks on this point though... I am not sure if I should
+ * trust it. 
+ *
+ * I have introduced drift compensation by adding "-2" for each corresponding
+ * value above 0x8000'0000. Plus we are not using the checksum words
+ * otherwise...
+ *
+ * */
+
+cs1 = -(ABSOLUTE(system_address_table) + ABSOLUTE(prcb_ptr) + ABSOLUTE(start_ip)) ; 
+cs2 = (ABSOLUTE(system_address_table) > 0x80000000) ? -2 : 0;
+cs3 = (ABSOLUTE(prcb_ptr) > 0x80000000) ? -2 : 0;
 
