@@ -676,13 +676,27 @@ _vect_INT3:
 .set FlushPort, IOSpaceBase + 0xC
 .text
 .L_text_hello_world:
-.asciz "hello, world!"
+.asciz "hello, world!\n"
 .align 6
 # code actually begins here!
 start_ip:
 	mov 0, g14 
+	# g0 - base address of the string to print
+	# g9 - console port
 	ldconst .L_text_hello_world, g0
-	bal print_string
+	ldconst ConsolePort, g9
+1:
+	ldob 0(g0), g8 			  # load the first character
+	cmpibe 0, g8, 2f
+	st g8, 0(g9) 			  # print character out
+	addi g0, 1, g0 			  # next character
+	b 1b					  # go again
+2:
+	ldconst FlushPort, g9	  # perform a flush
+	st g0, 0(g9)			  # doesn't really matter what the value is
+
+
+# pass control off to the interpreter
 	ldconst 0xff000010, g5
 	ldconst .Ljump_to_interpreter_iac, g6
 	synmovq g5, g6
@@ -704,20 +718,6 @@ move_data:
 	addi g4, 16, g4		      # next 16 bytes
 	cmpibg g0, g4, move_data  # loop until done
 	bx (g14)				  # return
-print_string:
-	# g0 - base address of the string to print
-	# g9 - internal
-	ldconst ConsolePort, g9
-1:
-	ldob 0(g0), g8 			  # load the first character
-	cmpibe 0, g8, 2f
-	st g8, 0(g9) 			  # print character out
-	addi g0, 1, g0 			  # next character
-	b 1b					  # go again
-2:
-	ldconst FlushPort, g9
-	st g0, 0(g9) 			  # flush the stream
-	bx (g14)
 _init_fp:
 	cvtir 0, fp0
 	movre fp0, fp1
