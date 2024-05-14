@@ -745,28 +745,29 @@ interpreter_entry:
 	lda -0x40(fp), pfp  # load pfp
 	lda 0x40(fp), sp    # setup current stack pointer
 	# at this point we are ready to enter into the interpreter
-	ldconst .L_text_hello_world, g0
-	call _print_string
 1:
+	
 	b 1b
-
+.macro Console_WriteCharacter value
+	st \value, (ConsolePort)
+.endm
+.macro Console_ReadCharacter dest
+	ld (ConsolePort), \dest
+.endm
 .text
 .align 6
 _print_string:
 1:
 	ldob 0(g0), r3 # load the first character
 	cmpibe 0, r3, 2f
-	st r3, (ConsolePort) 			  # print character out
+	Console_WriteCharacter r3
 	addi g0, 1, g0 			  # next character
 	b 1b					  # go again
 2:
 	st g0, (FlushPort)
 	ret
+.bss line_input, 128, 6
+.data
+line_length:
+	.word 0
 
-_read_character:
-	# read a single character from memory
-
-	ret
-.align 4
-.L_text_hello_world:
-.asciz "hello, world!\n"
