@@ -744,23 +744,21 @@ interpreter_entry:
 	lda _user_stack, fp # setup user stack space
 	lda -0x40(fp), pfp  # load pfp
 	lda 0x40(fp), sp    # setup current stack pointer
-#	call _init_fp		# initialize floating point registers
 	# at this point we are ready to enter into the interpreter
 	ldconst .L_text_hello_world, g0
-	call print_string
+	call _print_string
 1:
 	b 1b
 
-.L_text_hello_world:
-.asciz "hello, world!\n"
-#ldconst .L_text_hello_world, g0
-print_string:
+.text
+.align 6
+_print_string:
 	# g0 - pointer to the string
 	mov g0, r3
 	ldconst ConsolePort, r4
 	ldconst FlushPort, r5
 1:
-	ldob 0(g0), r6 			  # load the first character
+	ldob 0(r3), r6 			  # load the first character
 	cmpibe 0, r6, 2f
 	st r6, 0(r4) 			  # print character out
 	addi r3, 1, r3 			  # next character
@@ -768,3 +766,6 @@ print_string:
 2:
 	st g0, 0(r5)
 	ret
+
+.L_text_hello_world:
+.asciz "hello, world!\n"
