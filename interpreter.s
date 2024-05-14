@@ -662,10 +662,10 @@ _vect_INT2:
 	ret
 _vect_INT3:
 	ret
-
-.bss _user_stack, 256, 6
-.bss _intr_stack , 256, 6
-.bss _sup_stack, 256, 6
+# for now, increase the stacks to be sure
+.bss _user_stack, 4096, 6
+.bss _intr_stack , 4096, 6
+.bss _sup_stack, 4096, 6
 .bss _intr_ram, 1028, 6
 .bss _prcb_ram, 176, 6
 
@@ -675,28 +675,28 @@ _vect_INT3:
 .set ConsolePort, IOSpaceBase + 0x8
 .set FlushPort, IOSpaceBase + 0xC
 .text
-.L_text_hello_world:
-.asciz "hello, world!\n"
 .align 6
 # code actually begins here!
 start_ip:
 	mov 0, g14 
-	# g0 - base address of the string to print
-	# g9 - console port
-	ldconst .L_text_hello_world, g0
-	ldconst ConsolePort, g9
-1:
-	ldob 0(g0), g8 			  # load the first character
-	cmpibe 0, g8, 2f
-	st g8, 0(g9) 			  # print character out
-	addi g0, 1, g0 			  # next character
-	b 1b					  # go again
-2:
-	ldconst FlushPort, g9	  # perform a flush
-	st g0, 0(g9)			  # doesn't really matter what the value is
+# transfer the interrupt table to ram
+	ldconst 1028, g0
+	ldconst intr_table, g1
+	ldconst _intr_ram, g2
+	ldconst 0, g3
+	bal move_data
+# transfer the PRCB to ram
+	ldconst 176, g0
+	ldconst prcb_ptr, g1
+	ldconst _prcb_ram, g2
+	ldconst 0, g3
+	bal move_data
 
-
-# pass control off to the interpreter
+# now we need to fix up the prcb to point to the new interrupt table
+	ldconst _intr_ram, g0  # load address of the ram based interrupt table
+	ldconst _prcb_ram, g1 # load prcb in ram
+	st g0, 20(g1) 		  # store into the PRCB
+# pass control off to the interpreter/stage1
 	ldconst 0xff000010, g5
 	ldconst .Ljump_to_interpreter_iac, g6
 	synmovq g5, g6
@@ -711,6 +711,10 @@ start_ip:
 	# a simple data transfer routine responsible for copying blocks of 16-bytes from one place and 
     # depositing them in another location
 move_data:
+	# g0 - size
+	# g1 - src pointer
+	# g2 - destination pointer
+ 	# g3 - offset
 	# taken from the Kx manual and modified to look like the one found in SX
     #  manual and what I wrote for hitagimon (without the text output!)
 	ldq  (g1)[g4*1], g8       # load 4 words into g8
@@ -740,7 +744,27 @@ interpreter_entry:
 	lda _user_stack, fp # setup user stack space
 	lda -0x40(fp), pfp  # load pfp
 	lda 0x40(fp), sp    # setup current stack pointer
-	call _init_fp		# initialize floating point registers
+#	call _init_fp		# initialize floating point registers
 	# at this point we are ready to enter into the interpreter
+	ldconst .L_text_hello_world, g0
+	call print_string
 1:
 	b 1b
+
+.L_text_hello_world:
+.asciz "hello, world!\n"
+#ldconst .L_text_hello_world, g0
+print_string:
+	# g0 - pointer to the string
+	mov g0, r3
+	ldconst ConsolePort, r4
+	ldconst FlushPort, r5
+1:
+	ldob 0(g0), r6 			  # load the first character
+	cmpibe 0, r6, 2f
+	st r6, 0(r4) 			  # print character out
+	addi r3, 1, r3 			  # next character
+	b 1b					  # go again
+2:
+	st g0, 0(r5)
+	ret
