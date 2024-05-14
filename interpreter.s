@@ -753,19 +753,20 @@ interpreter_entry:
 .text
 .align 6
 _print_string:
-	# g0 - pointer to the string
-	mov g0, r3
-	ldconst ConsolePort, r4
-	ldconst FlushPort, r5
 1:
-	ldob 0(r3), r6 			  # load the first character
-	cmpibe 0, r6, 2f
-	st r6, 0(r4) 			  # print character out
-	addi r3, 1, r3 			  # next character
+	ldob 0(g0), r3 # load the first character
+	cmpibe 0, r3, 2f
+	st r3, (ConsolePort) 			  # print character out
+	addi g0, 1, g0 			  # next character
 	b 1b					  # go again
 2:
-	st g0, 0(r5)
+	st g0, (FlushPort)
 	ret
 
+_read_character:
+	# read a single character from memory
+
+	ret
+.align 4
 .L_text_hello_world:
 .asciz "hello, world!\n"
