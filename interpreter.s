@@ -827,6 +827,8 @@ newline:
 	.asciz "\n"
 .bss line_input, 256, 6
 .data
+.align 4
+line_metadata:
 line_position:
 	.word 0
 line_length:
@@ -841,16 +843,282 @@ b _sit_and_spin
 # each element is a single ascii character, I provide a way to compose more operators via a semi variable length design
 # 
 # This also requires a simple interpreter/vm to be used to setup the environment
+.data
+# we have a lookup table here
+.macro ActionTableEntry target=0, x1=0, x2=0, x3=0
+	.word \target, \x1, \x2, \x3
+.endm
+.align 6
+ActionTable:
+	ActionTableEntry # 0x00
+	ActionTableEntry # 0x01
+	ActionTableEntry # 0x02
+	ActionTableEntry # 0x03
+	ActionTableEntry # 0x04
+	ActionTableEntry # 0x05
+	ActionTableEntry # 0x06
+	ActionTableEntry # 0x07
+	ActionTableEntry # 0x08
+	ActionTableEntry # 0x09
+	ActionTableEntry # 0x0a
+	ActionTableEntry # 0x0b
+	ActionTableEntry # 0x0c
+	ActionTableEntry # 0x0d
+	ActionTableEntry # 0x0e
+	ActionTableEntry # 0x0f
+	ActionTableEntry # 0x10
+	ActionTableEntry # 0x11
+	ActionTableEntry # 0x12
+	ActionTableEntry # 0x13
+	ActionTableEntry # 0x14
+	ActionTableEntry # 0x15
+	ActionTableEntry # 0x16
+	ActionTableEntry # 0x17
+	ActionTableEntry # 0x18
+	ActionTableEntry # 0x19
+	ActionTableEntry # 0x1a
+	ActionTableEntry # 0x1b
+	ActionTableEntry # 0x1c
+	ActionTableEntry # 0x1d
+	ActionTableEntry # 0x1e
+	ActionTableEntry # 0x1f
+	ActionTableEntry # 0x20
+	ActionTableEntry # 0x21
+	ActionTableEntry # 0x22
+	ActionTableEntry # 0x23
+	ActionTableEntry # 0x24
+	ActionTableEntry # 0x25
+	ActionTableEntry # 0x26
+	ActionTableEntry # 0x27
+	ActionTableEntry # 0x28
+	ActionTableEntry # 0x29
+	ActionTableEntry # 0x2a
+	ActionTableEntry # 0x2b
+	ActionTableEntry # 0x2c
+	ActionTableEntry # 0x2d
+	ActionTableEntry # 0x2e
+	ActionTableEntry # 0x2f
+	ActionTableEntry # 0x30
+	ActionTableEntry # 0x31
+	ActionTableEntry # 0x32
+	ActionTableEntry # 0x33
+	ActionTableEntry # 0x34
+	ActionTableEntry # 0x35
+	ActionTableEntry # 0x36
+	ActionTableEntry # 0x37
+	ActionTableEntry # 0x38
+	ActionTableEntry # 0x39
+	ActionTableEntry # 0x3a
+	ActionTableEntry # 0x3b
+	ActionTableEntry # 0x3c
+	ActionTableEntry # 0x3d
+	ActionTableEntry # 0x3e
+	ActionTableEntry # 0x3f
+	ActionTableEntry # 0x40
+	ActionTableEntry # 0x41
+	ActionTableEntry # 0x42
+	ActionTableEntry # 0x43
+	ActionTableEntry # 0x44
+	ActionTableEntry # 0x45
+	ActionTableEntry # 0x46
+	ActionTableEntry # 0x47
+	ActionTableEntry # 0x48
+	ActionTableEntry # 0x49
+	ActionTableEntry # 0x4a
+	ActionTableEntry # 0x4b
+	ActionTableEntry # 0x4c
+	ActionTableEntry # 0x4d
+	ActionTableEntry # 0x4e
+	ActionTableEntry # 0x4f
+	ActionTableEntry # 0x50
+	ActionTableEntry # 0x51
+	ActionTableEntry # 0x52
+	ActionTableEntry # 0x53
+	ActionTableEntry # 0x54
+	ActionTableEntry # 0x55
+	ActionTableEntry # 0x56
+	ActionTableEntry # 0x57
+	ActionTableEntry # 0x58
+	ActionTableEntry # 0x59
+	ActionTableEntry # 0x5a
+	ActionTableEntry # 0x5b
+	ActionTableEntry # 0x5c
+	ActionTableEntry # 0x5d
+	ActionTableEntry # 0x5e
+	ActionTableEntry # 0x5f
+	ActionTableEntry # 0x60
+	ActionTableEntry # 0x61
+	ActionTableEntry # 0x62
+	ActionTableEntry # 0x63
+	ActionTableEntry # 0x64
+	ActionTableEntry # 0x65
+	ActionTableEntry # 0x66
+	ActionTableEntry # 0x67
+	ActionTableEntry # 0x68
+	ActionTableEntry # 0x69
+	ActionTableEntry # 0x6a
+	ActionTableEntry # 0x6b
+	ActionTableEntry # 0x6c
+	ActionTableEntry # 0x6d
+	ActionTableEntry # 0x6e
+	ActionTableEntry # 0x6f
+	ActionTableEntry # 0x70
+	ActionTableEntry # 0x71
+	ActionTableEntry # 0x72
+	ActionTableEntry # 0x73
+	ActionTableEntry # 0x74
+	ActionTableEntry # 0x75
+	ActionTableEntry # 0x76
+	ActionTableEntry # 0x77
+	ActionTableEntry # 0x78
+	ActionTableEntry # 0x79
+	ActionTableEntry # 0x7a
+	ActionTableEntry # 0x7b
+	ActionTableEntry # 0x7c
+	ActionTableEntry # 0x7d
+	ActionTableEntry # 0x7e
+	ActionTableEntry # 0x7f
+	ActionTableEntry # 0x80
+	ActionTableEntry # 0x81
+	ActionTableEntry # 0x82
+	ActionTableEntry # 0x83
+	ActionTableEntry # 0x84
+	ActionTableEntry # 0x85
+	ActionTableEntry # 0x86
+	ActionTableEntry # 0x87
+	ActionTableEntry # 0x88
+	ActionTableEntry # 0x89
+	ActionTableEntry # 0x8a
+	ActionTableEntry # 0x8b
+	ActionTableEntry # 0x8c
+	ActionTableEntry # 0x8d
+	ActionTableEntry # 0x8e
+	ActionTableEntry # 0x8f
+	ActionTableEntry # 0x90
+	ActionTableEntry # 0x91
+	ActionTableEntry # 0x92
+	ActionTableEntry # 0x93
+	ActionTableEntry # 0x94
+	ActionTableEntry # 0x95
+	ActionTableEntry # 0x96
+	ActionTableEntry # 0x97
+	ActionTableEntry # 0x98
+	ActionTableEntry # 0x99
+	ActionTableEntry # 0x9a
+	ActionTableEntry # 0x9b
+	ActionTableEntry # 0x9c
+	ActionTableEntry # 0x9d
+	ActionTableEntry # 0x9e
+	ActionTableEntry # 0x9f
+	ActionTableEntry # 0xa0
+	ActionTableEntry # 0xa1
+	ActionTableEntry # 0xa2
+	ActionTableEntry # 0xa3
+	ActionTableEntry # 0xa4
+	ActionTableEntry # 0xa5
+	ActionTableEntry # 0xa6
+	ActionTableEntry # 0xa7
+	ActionTableEntry # 0xa8
+	ActionTableEntry # 0xa9
+	ActionTableEntry # 0xaa
+	ActionTableEntry # 0xab
+	ActionTableEntry # 0xac
+	ActionTableEntry # 0xad
+	ActionTableEntry # 0xae
+	ActionTableEntry # 0xaf
+	ActionTableEntry # 0xb0
+	ActionTableEntry # 0xb1
+	ActionTableEntry # 0xb2
+	ActionTableEntry # 0xb3
+	ActionTableEntry # 0xb4
+	ActionTableEntry # 0xb5
+	ActionTableEntry # 0xb6
+	ActionTableEntry # 0xb7
+	ActionTableEntry # 0xb8
+	ActionTableEntry # 0xb9
+	ActionTableEntry # 0xba
+	ActionTableEntry # 0xbb
+	ActionTableEntry # 0xbc
+	ActionTableEntry # 0xbd
+	ActionTableEntry # 0xbe
+	ActionTableEntry # 0xbf
+	ActionTableEntry # 0xc0
+	ActionTableEntry # 0xc1
+	ActionTableEntry # 0xc2
+	ActionTableEntry # 0xc3
+	ActionTableEntry # 0xc4
+	ActionTableEntry # 0xc5
+	ActionTableEntry # 0xc6
+	ActionTableEntry # 0xc7
+	ActionTableEntry # 0xc8
+	ActionTableEntry # 0xc9
+	ActionTableEntry # 0xca
+	ActionTableEntry # 0xcb
+	ActionTableEntry # 0xcc
+	ActionTableEntry # 0xcd
+	ActionTableEntry # 0xce
+	ActionTableEntry # 0xcf
+	ActionTableEntry # 0xd0
+	ActionTableEntry # 0xd1
+	ActionTableEntry # 0xd2
+	ActionTableEntry # 0xd3
+	ActionTableEntry # 0xd4
+	ActionTableEntry # 0xd5
+	ActionTableEntry # 0xd6
+	ActionTableEntry # 0xd7
+	ActionTableEntry # 0xd8
+	ActionTableEntry # 0xd9
+	ActionTableEntry # 0xda
+	ActionTableEntry # 0xdb
+	ActionTableEntry # 0xdc
+	ActionTableEntry # 0xdd
+	ActionTableEntry # 0xde
+	ActionTableEntry # 0xdf
+	ActionTableEntry # 0xe0
+	ActionTableEntry # 0xe1
+	ActionTableEntry # 0xe2
+	ActionTableEntry # 0xe3
+	ActionTableEntry # 0xe4
+	ActionTableEntry # 0xe5
+	ActionTableEntry # 0xe6
+	ActionTableEntry # 0xe7
+	ActionTableEntry # 0xe8
+	ActionTableEntry # 0xe9
+	ActionTableEntry # 0xea
+	ActionTableEntry # 0xeb
+	ActionTableEntry # 0xec
+	ActionTableEntry # 0xed
+	ActionTableEntry # 0xee
+	ActionTableEntry # 0xef
+	ActionTableEntry # 0xf0
+	ActionTableEntry # 0xf1
+	ActionTableEntry # 0xf2
+	ActionTableEntry # 0xf3
+	ActionTableEntry # 0xf4
+	ActionTableEntry # 0xf5
+	ActionTableEntry # 0xf6
+	ActionTableEntry # 0xf7
+	ActionTableEntry # 0xf8
+	ActionTableEntry # 0xf9
+	ActionTableEntry # 0xfa
+	ActionTableEntry # 0xfb
+	ActionTableEntry # 0xfc
+	ActionTableEntry # 0xfd
+	ActionTableEntry # 0xfe
+	ActionTableEntry # 0xff
 .text
 .align 6
 _dispatch_first_character:
-	ld (line_length), r3
-	cmpibe 0, r3, .Lno_input_to_process
-	ld (line_position), r4
-	cmpibe r3, r4, .Lno_input_to_process
-	call _display_input
-.Lno_input_to_process:
+	Console_ReadCharacter r3 # get the first character from the console port
+	ldconst 0x000000FF, r4
+	and r3, r4, r3 # convert to an 8-bit value for simplicity
+	ldq  (ActionTable)[r3*16], r8       # load 4 words into r8 so I can interpret the entries themselves
+	cmpibe 0, r8, .LFinished		   # not pointing to anything
+	callx (r8)
+.LFinished:
 	ret
+
+
 _simple_vm:
 # this is our execution machine, each operation is like a monitor
 # for example, we want to provide a way to store a value to memory
@@ -859,6 +1127,6 @@ _simple_vm:
 # Otherwise, we ignore everything else
 # We also view the '#' as a single line comment
 # The newline character is important since no commands can be less than this line
-	call _getline # reuse the commands that we were using earlier
+#call _getline # reuse the commands that we were using earlier
 	call _dispatch_first_character
 	b _simple_vm
