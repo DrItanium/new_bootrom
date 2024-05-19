@@ -22,6 +22,9 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* initial boot setup */
+.macro incr reg
+	addi \reg, 1, \reg
+.endm
 .macro DefTableEntry name
    .word (\name + 0x2)
 .endm
@@ -765,6 +768,7 @@ interpreter_entry:
 	ldconst line_input, g0
 	call _read_line
 	st g0, (line_length)
+	cmpibe 0, g0, 1b
 	ldconst prompt1, g0
 	call _print_string
 	ldconst line_input, g0
@@ -772,34 +776,35 @@ interpreter_entry:
 	ldconst newline, g0
 	call _print_string
 	b 1b
+_emit_character:
+	Console_WriteCharacter g0
+	ret
 _read_line:
 	# g0 is the storage cell as an input and the length when done
-	mov g0, r3 # r3 now holds onto the storage cell
+	mov g0, r3 # r3 now holds onto the storage cell address
 	ldconst 0, r4 # the number of characters read this invocation
 	ldconst 0, r5 # the current character
-	ldconst -1, r6 # sentinel value
-	ldconst '\n', r7 # end character
-	ldconst 0, r8 	 # zero
 1:
 	Console_ReadCharacter r5 # get a character
-	cmpibe r6, r5, 1b  		 # if it is the sentinel value then just keep waiting and do not record
-	cmpibe r7, r5, 2f        # done so record the final thing
+	cmpibl 0, r5, 1b		 # we got a negative value so keep waiting
+	cmpibe '\n', r5, 2f        # done so record the final thing
 							 # stash the character and increment by 1
 	stob r5, 0(r3)			 # save to memory
-	addo r4, 1, r4			 # increment characters read by 1
-	addi r3, 1, r3			 # increment address by 1
+	incr r4					 # increment count by 1
+	incr r3					 # increment address by 1
 	b 1b
 2:
-	stob r8, 1(r3)			 # stash a zero in the next cell after the last one
+	ldconst 0, r5
+	stob r5, 0(r3)			 # stash a zero in the next cell after the last one
 	mov r4, g0				 # return the number of characters read
 	ret
-
 _print_string:
+	mov g0, r3
 1:
-	ldob 0(g0), r3 # load the first character
-	cmpibe 0, r3, 2f
-	Console_WriteCharacter r3
-	addi g0, 1, g0 			  # next character
+	ldob 0(r3), g0 # load the first character
+	cmpibe 0, g0, 2f
+	call _emit_character # expensive but it is more forth like for now
+	incr r3				 # next character
 	b 1b					  # go again
 2:
 	Console_Flush
@@ -813,6 +818,8 @@ newline:
 	.asciz "\n"
 .bss line_input, 256, 6
 .data
+line_position:
+	.word 0
 line_length:
 	.word 0
 
