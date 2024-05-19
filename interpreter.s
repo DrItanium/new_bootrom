@@ -674,6 +674,20 @@ _vect_INT3:
 .set CLK2SpeedPort, IOSpaceBase + 0x4
 .set ConsolePort, IOSpaceBase + 0x8
 .set FlushPort, IOSpaceBase + 0xC
+.macro Console_WriteCharacter value
+	st \value, (ConsolePort)
+.endm
+.macro Console_ReadCharacter dest
+	ld (ConsolePort), \dest
+.endm
+.macro Console_Flush 
+	st g0, (FlushPort)
+.endm
+.macro Console_NewLine
+	ldconst '\n', r15
+	Console_WriteCharacter r15
+	Console_Flush
+.endm
 .text
 .align 6
 # code actually begins here!
@@ -746,17 +760,18 @@ interpreter_entry:
 	lda 0x40(fp), sp    # setup current stack pointer
 	# at this point we are ready to enter into the interpreter
 1:
-	
+	ldconst prompt0, g0
+	call _print_string
+	ldconst line_input, g0
+	call _read_line
+	st g0, (line_length)
+	ldconst prompt1, g0
+	call _print_string
+	ldconst line_input, g0
+	call _print_string
+	ldconst newline, g0
+	call _print_string
 	b 1b
-.macro Console_WriteCharacter value
-	st \value, (ConsolePort)
-.endm
-.macro Console_ReadCharacter dest
-	ld (ConsolePort), \dest
-.endm
-.text
-.align 6
-
 _read_line:
 	# g0 is the storage cell as an input and the length when done
 	mov g0, r3 # r3 now holds onto the storage cell
@@ -767,7 +782,7 @@ _read_line:
 	ldconst 0, r8 	 # zero
 1:
 	Console_ReadCharacter r5 # get a character
-	cmpibe r6, r5, 1b  
+	cmpibe r6, r5, 1b  		 # if it is the sentinel value then just keep waiting and do not record
 	cmpibe r7, r5, 2f        # done so record the final thing
 							 # stash the character and increment by 1
 	stob r5, 0(r3)			 # save to memory
@@ -787,9 +802,15 @@ _print_string:
 	addi g0, 1, g0 			  # next character
 	b 1b					  # go again
 2:
-	st g0, (FlushPort)
+	Console_Flush
 	ret
 
+prompt0: 
+	.asciz "> "
+prompt1:
+	.asciz "you input: "
+newline:
+	.asciz "\n"
 .bss line_input, 1024, 6
 .data
 line_length:
