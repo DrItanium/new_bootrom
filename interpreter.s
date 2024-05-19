@@ -811,7 +811,7 @@ prompt1:
 	.asciz "you input: "
 newline:
 	.asciz "\n"
-.bss line_input, 1024, 6
+.bss line_input, 256, 6
 .data
 line_length:
 	.word 0
