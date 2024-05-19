@@ -776,9 +776,6 @@ interpreter_entry:
 	ldconst newline, g0
 	call _print_string
 	b 1b
-_emit_character:
-	Console_WriteCharacter g0
-	ret
 _read_line:
 	# g0 is the storage cell as an input and the length when done
 	mov g0, r3 # r3 now holds onto the storage cell address
@@ -786,7 +783,7 @@ _read_line:
 	ldconst 0, r5 # the current character
 1:
 	Console_ReadCharacter r5 # get a character
-	cmpibl 0, r5, 1b		 # we got a negative value so keep waiting
+	cmpibg 0, r5, 1b		 # we got a negative value so keep waiting
 	cmpibe '\n', r5, 2f        # done so record the final thing
 							 # stash the character and increment by 1
 	stob r5, 0(r3)			 # save to memory
@@ -803,7 +800,7 @@ _print_string:
 1:
 	ldob 0(r3), g0 # load the first character
 	cmpibe 0, g0, 2f
-	call _emit_character # expensive but it is more forth like for now
+	Console_WriteCharacter g0
 	incr r3				 # next character
 	b 1b					  # go again
 2:
