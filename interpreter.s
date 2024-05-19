@@ -763,22 +763,32 @@ interpreter_entry:
 	lda 0x40(fp), sp    # setup current stack pointer
 	# at this point we are ready to enter into the interpreter
 1:
-	ldconst prompt0, g0
-	call _print_string
+	call _prompt
+	call _getline
+	cmpibe 0, g0, 2f
+	call _display_input
+2:
+	b 1b
+_getline:
 	ldconst line_input, g0
 	call _read_line
 	st g0, (line_length)
-	cmpibe 0, g0, 1b
+	ret
+	
+_prompt:
+	ldconst prompt0, g0
+	call _print_string
+	ret
+_display_input:
 	ldconst prompt1, g0
 	call _print_string
 	ldconst line_input, g0
 	call _print_string
 	ldconst newline, g0
 	call _print_string
-	b 1b
+	ret
 _read_line:
 	# g0 is the storage cell as an input and the length when done
-	mov g0, r3 # r3 now holds onto the storage cell address
 	ldconst 0, r4 # the number of characters read this invocation
 	ldconst 0, r5 # the current character
 1:
@@ -786,9 +796,9 @@ _read_line:
 	cmpibg 0, r5, 1b		 # we got a negative value so keep waiting
 	cmpibe '\n', r5, 2f        # done so record the final thing
 							 # stash the character and increment by 1
-	stob r5, 0(r3)			 # save to memory
+	stob r5, 0(g0)			 # save to memory
 	incr r4					 # increment count by 1
-	incr r3					 # increment address by 1
+	incr g0					 # increment address by 1
 	b 1b
 2:
 	ldconst 0, r5
