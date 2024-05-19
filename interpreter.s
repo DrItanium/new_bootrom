@@ -756,6 +756,29 @@ interpreter_entry:
 .endm
 .text
 .align 6
+
+_read_line:
+	# g0 is the storage cell as an input and the length when done
+	mov g0, r3 # r3 now holds onto the storage cell
+	ldconst 0, r4 # the number of characters read this invocation
+	ldconst 0, r5 # the current character
+	ldconst -1, r6 # sentinel value
+	ldconst '\n', r7 # end character
+	ldconst 0, r8 	 # zero
+1:
+	Console_ReadCharacter r5 # get a character
+	cmpibe r6, r5, 1b  
+	cmpibe r7, r5, 2f        # done so record the final thing
+							 # stash the character and increment by 1
+	stob r5, 0(r3)			 # save to memory
+	addo r4, 1, r4			 # increment characters read by 1
+	addi r3, 1, r3			 # increment address by 1
+	b 1b
+2:
+	stob r8, 1(r3)			 # stash a zero in the next cell after the last one
+	mov r4, g0				 # return the number of characters read
+	ret
+
 _print_string:
 1:
 	ldob 0(g0), r3 # load the first character
@@ -766,7 +789,8 @@ _print_string:
 2:
 	st g0, (FlushPort)
 	ret
-.bss line_input, 128, 6
+
+.bss line_input, 1024, 6
 .data
 line_length:
 	.word 0
