@@ -761,6 +761,8 @@ interpreter_entry:
 	lda _user_stack, fp # setup user stack space
 	lda -0x40(fp), pfp  # load pfp
 	lda 0x40(fp), sp    # setup current stack pointer
+	b _simple_vm
+_forth_frontend:
 	# at this point we are ready to enter into the interpreter
 1:
 	call _prompt
@@ -830,3 +832,33 @@ line_position:
 line_length:
 	.word 0
 
+# this is a simple little routine to provide an execution body as needed
+.text
+.align 6
+_sit_and_spin:
+b _sit_and_spin
+# This ROM needs to have a simple way to build up the system based off of some simple actions and operators
+# each element is a single ascii character, I provide a way to compose more operators via a semi variable length design
+# 
+# This also requires a simple interpreter/vm to be used to setup the environment
+.text
+.align 6
+_dispatch_first_character:
+	ld (line_length), r3
+	cmpibe 0, r3, .Lno_input_to_process
+	ld (line_position), r4
+	cmpibe r3, r4, .Lno_input_to_process
+	call _display_input
+.Lno_input_to_process:
+	ret
+_simple_vm:
+# this is our execution machine, each operation is like a monitor
+# for example, we want to provide a way to store a value to memory
+# !xxxxxxxxyyyyyyyy This will cause a 32-bit value (x) to be stored to a 32-bit address (y)
+# We wrap all instructions with : and end with ;
+# Otherwise, we ignore everything else
+# We also view the '#' as a single line comment
+# The newline character is important since no commands can be less than this line
+	call _getline # reuse the commands that we were using earlier
+	call _dispatch_first_character
+	b _simple_vm
