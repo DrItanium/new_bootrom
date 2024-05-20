@@ -849,167 +849,171 @@ b _sit_and_spin
 	.word \target, \x1, \x2, \x3
 .endm
 .align 6
+CurrentActionTable:
+	.word ActionTable # this is the current "instruction set" being executed
 ActionTable:
-	ActionTableEntry # 0x00
-	ActionTableEntry # 0x01
-	ActionTableEntry # 0x02
-	ActionTableEntry # 0x03
-	ActionTableEntry # 0x04
-	ActionTableEntry # 0x05
-	ActionTableEntry # 0x06
-	ActionTableEntry # 0x07
-	ActionTableEntry # 0x08
-	ActionTableEntry # 0x09
-	ActionTableEntry # 0x0a
-	ActionTableEntry # 0x0b
-	ActionTableEntry # 0x0c
-	ActionTableEntry # 0x0d
-	ActionTableEntry # 0x0e
-	ActionTableEntry # 0x0f
-	ActionTableEntry # 0x10
-	ActionTableEntry # 0x11
-	ActionTableEntry # 0x12
-	ActionTableEntry # 0x13
-	ActionTableEntry # 0x14
-	ActionTableEntry # 0x15
-	ActionTableEntry # 0x16
-	ActionTableEntry # 0x17
-	ActionTableEntry # 0x18
-	ActionTableEntry # 0x19
-	ActionTableEntry # 0x1a
-	ActionTableEntry # 0x1b
-	ActionTableEntry # 0x1c
-	ActionTableEntry # 0x1d
-	ActionTableEntry # 0x1e
-	ActionTableEntry # 0x1f
-	ActionTableEntry # 0x20
-	ActionTableEntry # 0x21
-	ActionTableEntry # 0x22
-	ActionTableEntry # 0x23
-	ActionTableEntry # 0x24
-	ActionTableEntry # 0x25
-	ActionTableEntry # 0x26
-	ActionTableEntry # 0x27
-	ActionTableEntry # 0x28
-	ActionTableEntry # 0x29
-	ActionTableEntry # 0x2a
-	ActionTableEntry # 0x2b
-	ActionTableEntry # 0x2c
-	ActionTableEntry # 0x2d
-	ActionTableEntry # 0x2e
-	ActionTableEntry # 0x2f
-	ActionTableEntry # 0x30
-	ActionTableEntry # 0x31
-	ActionTableEntry # 0x32
-	ActionTableEntry # 0x33
-	ActionTableEntry # 0x34
-	ActionTableEntry # 0x35
-	ActionTableEntry # 0x36
-	ActionTableEntry # 0x37
-	ActionTableEntry # 0x38
-	ActionTableEntry # 0x39
-	ActionTableEntry # 0x3a
-	ActionTableEntry # 0x3b
-	ActionTableEntry # 0x3c
-	ActionTableEntry # 0x3d
-	ActionTableEntry # 0x3e
-	ActionTableEntry # 0x3f
-	ActionTableEntry # 0x40
-	ActionTableEntry # 0x41
-	ActionTableEntry # 0x42
-	ActionTableEntry # 0x43
-	ActionTableEntry # 0x44
-	ActionTableEntry # 0x45
-	ActionTableEntry # 0x46
-	ActionTableEntry # 0x47
-	ActionTableEntry # 0x48
-	ActionTableEntry # 0x49
-	ActionTableEntry # 0x4a
-	ActionTableEntry # 0x4b
-	ActionTableEntry # 0x4c
-	ActionTableEntry # 0x4d
-	ActionTableEntry # 0x4e
-	ActionTableEntry # 0x4f
-	ActionTableEntry # 0x50
-	ActionTableEntry # 0x51
-	ActionTableEntry # 0x52
-	ActionTableEntry # 0x53
-	ActionTableEntry # 0x54
-	ActionTableEntry # 0x55
-	ActionTableEntry # 0x56
-	ActionTableEntry # 0x57
-	ActionTableEntry # 0x58
-	ActionTableEntry # 0x59
-	ActionTableEntry # 0x5a
-	ActionTableEntry # 0x5b
-	ActionTableEntry # 0x5c
-	ActionTableEntry # 0x5d
-	ActionTableEntry # 0x5e
-	ActionTableEntry # 0x5f
-	ActionTableEntry # 0x60
-	ActionTableEntry # 0x61
-	ActionTableEntry # 0x62
-	ActionTableEntry # 0x63
-	ActionTableEntry # 0x64
-	ActionTableEntry # 0x65
-	ActionTableEntry # 0x66
-	ActionTableEntry # 0x67
-	ActionTableEntry # 0x68
-	ActionTableEntry # 0x69
-	ActionTableEntry # 0x6a
-	ActionTableEntry # 0x6b
-	ActionTableEntry # 0x6c
-	ActionTableEntry # 0x6d
-	ActionTableEntry # 0x6e
-	ActionTableEntry # 0x6f
-	ActionTableEntry # 0x70
-	ActionTableEntry # 0x71
-	ActionTableEntry # 0x72
-	ActionTableEntry # 0x73
-	ActionTableEntry # 0x74
-	ActionTableEntry # 0x75
-	ActionTableEntry # 0x76
-	ActionTableEntry # 0x77
-	ActionTableEntry # 0x78
-	ActionTableEntry # 0x79
-	ActionTableEntry # 0x7a
-	ActionTableEntry # 0x7b
-	ActionTableEntry # 0x7c
-	ActionTableEntry # 0x7d
-	ActionTableEntry # 0x7e
-	ActionTableEntry # 0x7f
-	ActionTableEntry # 0x80
-	ActionTableEntry # 0x81
-	ActionTableEntry # 0x82
-	ActionTableEntry # 0x83
-	ActionTableEntry # 0x84
-	ActionTableEntry # 0x85
-	ActionTableEntry # 0x86
-	ActionTableEntry # 0x87
-	ActionTableEntry # 0x88
-	ActionTableEntry # 0x89
-	ActionTableEntry # 0x8a
-	ActionTableEntry # 0x8b
-	ActionTableEntry # 0x8c
-	ActionTableEntry # 0x8d
-	ActionTableEntry # 0x8e
-	ActionTableEntry # 0x8f
-	ActionTableEntry # 0x90
-	ActionTableEntry # 0x91
-	ActionTableEntry # 0x92
-	ActionTableEntry # 0x93
-	ActionTableEntry # 0x94
-	ActionTableEntry # 0x95
-	ActionTableEntry # 0x96
-	ActionTableEntry # 0x97
-	ActionTableEntry # 0x98
-	ActionTableEntry # 0x99
-	ActionTableEntry # 0x9a
-	ActionTableEntry # 0x9b
-	ActionTableEntry # 0x9c
-	ActionTableEntry # 0x9d
-	ActionTableEntry # 0x9e
-	ActionTableEntry # 0x9f
+# based off of the ascii codes set
+	ActionTableEntry # 0x00 - NULL (null)
+	ActionTableEntry # 0x01 - SOH (start of heading)
+	ActionTableEntry # 0x02 - SOT (start of text)
+	ActionTableEntry # 0x03 - ETX (end of text)
+	ActionTableEntry # 0x04 - EOT (end of transmission)
+	ActionTableEntry # 0x05 - ENQ (enquiry)
+	ActionTableEntry # 0x06 - ACK (acknowledge)
+	ActionTableEntry # 0x07 - BEL (bell)
+	ActionTableEntry # 0x08 - BS  (backspace)
+	ActionTableEntry # 0x09 - TAB (horizontal tab)
+	ActionTableEntry # 0x0a - LF  (NL line feed, new line)
+	ActionTableEntry # 0x0b - VT  (vertical tab)
+	ActionTableEntry # 0x0c - FF (NP form feed, new page)
+	ActionTableEntry # 0x0d - CR (carriage return)
+	ActionTableEntry # 0x0e - SO (shift out) - switch to the other action set
+	ActionTableEntry # 0x0f - SI (shift in) - switch to the original action set
+	ActionTableEntry # 0x10 - DLE (data link escape)
+	ActionTableEntry # 0x11 - DC1 (device control 1)
+	ActionTableEntry # 0x12 - DC2 (device control 2)
+	ActionTableEntry # 0x13 - DC3 (device control 3)
+	ActionTableEntry # 0x14 - DC4 (device control 4)
+	ActionTableEntry # 0x15 - NAK (negative acknowledge)
+	ActionTableEntry # 0x16 - SYN (synchronous idle)
+	ActionTableEntry # 0x17 - ETB (end of transmission block)
+	ActionTableEntry # 0x18 - CAN (cancel)
+	ActionTableEntry # 0x19 - EM  (end of medium)
+	ActionTableEntry # 0x1a - SUB (substitute)
+	ActionTableEntry # 0x1b - ESC (escape)
+	ActionTableEntry # 0x1c - FS  (file separator)
+	ActionTableEntry # 0x1d - GS  (group separator)
+	ActionTableEntry # 0x1e - RS  (record separator)
+	ActionTableEntry # 0x1f - US  (unit separator)
+	ActionTableEntry # 0x20 - space
+	ActionTableEntry # 0x21 - !
+	ActionTableEntry # 0x22 - "
+	ActionTableEntry # 0x23 - #
+	ActionTableEntry # 0x24 - $
+	ActionTableEntry # 0x25 - %
+	ActionTableEntry # 0x26 - &
+	ActionTableEntry # 0x27 - '
+	ActionTableEntry # 0x28 - (
+	ActionTableEntry # 0x29 - )
+	ActionTableEntry # 0x2a - *
+	ActionTableEntry # 0x2b - +
+	ActionTableEntry # 0x2c - ,
+	ActionTableEntry # 0x2d - -
+	ActionTableEntry # 0x2e - .
+	ActionTableEntry # 0x2f - /
+	ActionTableEntry # 0x30 - 0
+	ActionTableEntry # 0x31 - 1
+	ActionTableEntry # 0x32 - 2
+	ActionTableEntry # 0x33 - 3
+	ActionTableEntry # 0x34 - 4
+	ActionTableEntry # 0x35 - 5
+	ActionTableEntry # 0x36 - 6
+	ActionTableEntry # 0x37 - 7
+	ActionTableEntry # 0x38 - 8
+	ActionTableEntry # 0x39 - 9
+	ActionTableEntry # 0x3a - :
+	ActionTableEntry # 0x3b - ;
+	ActionTableEntry # 0x3c - <
+	ActionTableEntry # 0x3d - =
+	ActionTableEntry # 0x3e - >
+	ActionTableEntry # 0x3f - ?
+	ActionTableEntry # 0x40 - @
+	ActionTableEntry # 0x41 - A
+	ActionTableEntry # 0x42 - B
+	ActionTableEntry # 0x43 - C 
+	ActionTableEntry # 0x44 - D 
+	ActionTableEntry # 0x45 - E
+	ActionTableEntry # 0x46 - F
+	ActionTableEntry # 0x47 - G
+	ActionTableEntry # 0x48 - H
+	ActionTableEntry # 0x49 - I
+	ActionTableEntry # 0x4a - J
+	ActionTableEntry # 0x4b - K
+	ActionTableEntry # 0x4c - L
+	ActionTableEntry # 0x4d - M
+	ActionTableEntry # 0x4e - N
+	ActionTableEntry # 0x4f - O
+	ActionTableEntry # 0x50 - P 
+	ActionTableEntry # 0x51 - Q
+	ActionTableEntry # 0x52 - R
+	ActionTableEntry # 0x53 - S
+	ActionTableEntry # 0x54 - T
+	ActionTableEntry # 0x55 - U
+	ActionTableEntry # 0x56 - V
+	ActionTableEntry # 0x57 - W
+	ActionTableEntry # 0x58 - X
+	ActionTableEntry # 0x59 - Y
+	ActionTableEntry # 0x5a - Z
+	ActionTableEntry # 0x5b - [
+	ActionTableEntry # 0x5c - \
+	ActionTableEntry # 0x5d - ]
+	ActionTableEntry # 0x5e - ^
+	ActionTableEntry # 0x5f - _
+	ActionTableEntry # 0x60 - `
+	ActionTableEntry # 0x61 - a
+	ActionTableEntry # 0x62 - b
+	ActionTableEntry # 0x63 - c
+	ActionTableEntry # 0x64 - d
+	ActionTableEntry # 0x65 - e
+	ActionTableEntry # 0x66 - f
+	ActionTableEntry # 0x67 - g
+	ActionTableEntry # 0x68 - h
+	ActionTableEntry # 0x69 - i
+	ActionTableEntry # 0x6a - j
+	ActionTableEntry # 0x6b - k
+	ActionTableEntry # 0x6c - l
+	ActionTableEntry # 0x6d - m
+	ActionTableEntry # 0x6e - n
+	ActionTableEntry # 0x6f - o
+	ActionTableEntry # 0x70 - p
+	ActionTableEntry # 0x71 - q
+	ActionTableEntry # 0x72 - r
+	ActionTableEntry # 0x73 - s
+	ActionTableEntry # 0x74 - t
+	ActionTableEntry # 0x75 - u
+	ActionTableEntry # 0x76 - v
+	ActionTableEntry # 0x77 - w
+	ActionTableEntry # 0x78 - x
+	ActionTableEntry # 0x79 - y
+	ActionTableEntry # 0x7a - z
+	ActionTableEntry # 0x7b - {
+	ActionTableEntry # 0x7c - |
+	ActionTableEntry # 0x7d - }
+	ActionTableEntry # 0x7e - ~
+	ActionTableEntry # 0x7f - DEL
+# extended ascii codes / C1 control codes
+	ActionTableEntry # 0x80 - PAD (Padding Character)
+	ActionTableEntry # 0x81 - HOP (High Octet Preset)
+	ActionTableEntry # 0x82 - BPH (Break Permitted Here)
+	ActionTableEntry # 0x83 - NBH (No Break Here)
+	ActionTableEntry # 0x84 - IND (Index)
+	ActionTableEntry # 0x85 - NEL (Next Line)
+	ActionTableEntry # 0x86 - SSA (Start of Selected Area)
+	ActionTableEntry # 0x87 - ESA (End of Selected Area)
+	ActionTableEntry # 0x88 - HTS (Character Tabulation Set/Horizontal Tabulation Set)
+	ActionTableEntry # 0x89 - HTJ (Character Tabulation With Justification/Horizontal Tabulation With Justification)
+	ActionTableEntry # 0x8a - VTS (Line/Vertical Tabulation Set)
+	ActionTableEntry # 0x8b - PLD (Partial Line Forward/Partial Line Down)
+	ActionTableEntry # 0x8c - PLU (Partial Line Backward/Partial Line Up)
+	ActionTableEntry # 0x8d - RI  (Reverse Line Feed / Reverse Index)
+	ActionTableEntry # 0x8e - SS2 (Single Shift 2)
+	ActionTableEntry # 0x8f - SS3 (Single Shift 3)
+	ActionTableEntry # 0x90 - DCS (Device Control String)
+	ActionTableEntry # 0x91 - PU1 (Private Use 1)
+	ActionTableEntry # 0x92 - PU2 (Private Use 2)
+	ActionTableEntry # 0x93 - STS (Set Transmit State)
+	ActionTableEntry # 0x94 - CCH (Cancel character)
+	ActionTableEntry # 0x95 - MW (Message Waiting)
+	ActionTableEntry # 0x96 - SPA (Start of Protected Area)
+	ActionTableEntry # 0x97 - EPA (End of Protected Area)
+	ActionTableEntry # 0x98 - SOS (Start of String)
+	ActionTableEntry # 0x99 - SGC/SGCI (Single Graphic Character Introducer [For unicode])
+	ActionTableEntry PrintAscii # 0x9a - SCI (Single Character Introducer [To be followed by a single printable character (0x20 through 0x7e) or format effector (0x08 through 0x0d), and to print it as ASCII no matter what graphic or control sets were in use)
+	ActionTableEntry # 0x9b - CSI (Control Sequence Introducer [Used to introduce control sequences that take parameters. ANSI escape sequences])
+	ActionTableEntry # 0x9c - ST (String Terminator)
+	ActionTableEntry # 0x9d - OSC (Operating System Command)
+	ActionTableEntry # 0x9e - PM (Privacy Message)
+	ActionTableEntry # 0x9f - APC (Application Program Command)
 	ActionTableEntry # 0xa0
 	ActionTableEntry # 0xa1
 	ActionTableEntry # 0xa2
@@ -1108,6 +1112,14 @@ ActionTable:
 	ActionTableEntry # 0xff
 .text
 .align 6
+PrintAscii: # Single Character Introducer (the print character instruction)
+			# To be followed by a single character to be interpreted no matter the character set as an ascii character
+	Console_ReadCharacter r3 # read the next character as we are going to print that one out
+	ldconst 0x0000007F, r4   # convert to ascii code mask
+	and r3, r4, r3
+	Console_WriteCharacter r3 # then just write the masked value out
+	Console_Flush
+	ret
 _dispatch_first_character:
 	Console_ReadCharacter r3 # get the first character from the console port
 	ldconst 0x000000FF, r4
